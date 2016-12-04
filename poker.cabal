@@ -1,0 +1,24 @@
+name:                poker
+version:             0.1.0.0
+license:             BSD3
+license-file:        LICENSE
+author:              Michal Lomnicki
+maintainer:          michal.lomnicki@gmail.com
+category:            Game
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+executable poker
+  main-is:             Main.hs
+  build-depends:       base >=4.9 && <4.10, split >=0.2 && <0.3
+  default-language:    Haskell2010
+
+test-suite tests
+  default-extensions:  OverloadedStrings
+  type: exitcode-stdio-1.0
+  main-is: HSpecTests.hs
+  build-depends: base,
+    split >= 0.2,
+    hspec >= 1.8
+  default-language:    Haskell2010
