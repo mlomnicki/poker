@@ -47,8 +47,8 @@ suit card = (snd card)
 
 groupHand hand = reverse $
                  sortBy (comparing length) $
-                 groupBy ((==) `on` fst) $
-                 sortBy (comparing fst) hand
+                 groupBy ((==) `on` rank) $
+                 sortBy (comparing rank) hand
 
 
 isPair :: Hand -> Maybe HandType
