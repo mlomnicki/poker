@@ -4,7 +4,6 @@ import Data.List.Split
 import Data.List (sort, sortBy, groupBy)
 import Data.Ord (comparing)
 import Data.Function (on)
-import Data.Maybe (isJust)
 
 data Rank = Two
      | Three
@@ -40,6 +39,12 @@ data HandType = HighestCard   Rank
               | RoyalFlush
               deriving (Show, Eq)
 
+rank :: Card -> Rank
+rank card = (fst card)
+
+suit :: Card -> Suit
+suit card = (snd card)
+
 type HandGrouped = [[Card]]
 
 groupHand hand = reverse $
@@ -48,96 +53,93 @@ groupHand hand = reverse $
                  sortBy (comparing fst) hand
 
 
-isPair :: HandGrouped -> Maybe HandGrouped
-isPair ([_,_]:xs) = (Just xs)
-isPair _ = Nothing
+isPair :: Hand -> Maybe HandType
+isPair hand =
+  case groupHand hand of
+    ([a, _]:xs) -> Just (Pair (rank a))
+    otherwise   -> Nothing
 
-isTwoPairs :: HandGrouped -> Maybe HandGrouped
+isTwoPairs :: Hand -> Maybe HandType
 isTwoPairs hand =
-   case rest of
-     Nothing -> Nothing
-     Just rest -> isPair rest
-    where rest = isPair hand
+  case groupHand hand of
+    ([a, _]:[b, _]:xs) -> Just (TwoPairs (rank a) (rank b))
+    otherwise          -> Nothing
 
-isSet :: HandGrouped -> Maybe HandGrouped
-isSet ([_,_,_]:xs) = (Just xs)
-isSet _ = Nothing
+isSet :: Hand -> Maybe HandType
+isSet hand =
+  case groupHand hand of
+    ([a, _, _]:xs) -> Just (Set (rank a))
+    otherwise      -> Nothing
 
-isStraight :: HandGrouped -> Maybe HandGrouped
+isStraight :: Hand -> Maybe HandType
 isStraight (hand) =
-  case isStraight' flatHand of
-    True  -> Just hand
-    False -> Nothing
-  where flatHand = map rank (concat hand)
+  case sort (map rank hand) of
+    [Two, Three, Four, Five, Ace]   -> Just (Straight Ace)
+    [Two, Three, Four, Five, Six]   -> Just (Straight Two)
+    [Three, Four, Five, Six, Seven] -> Just (Straight Three)
+    [Four, Five, Six, Seven, Eight] -> Just (Straight Four)
+    [Five, Six, Seven, Eight, Nine] -> Just (Straight Five)
+    [Six, Seven, Eight, Nine, Ten]  -> Just (Straight Six)
+    [Seven, Eight, Nine, Ten, Jack] -> Just (Straight Seven)
+    [Eight, Nine, Ten, Jack, Queen] -> Just (Straight Eight)
+    [Nine, Ten, Jack, Queen, King]  -> Just (Straight Nine)
+    [Ten, Jack, Queen, King, Ace]   -> Just (Straight Ten)
+    otherwise -> Nothing
 
-isStraight' [Ace, Five, Four, Three, Two] = True
-isStraight' flatHand =
-  let pairs = zip flatHand (drop 1 flatHand) in
-    all (\(x,y) -> ((maxBound :: Rank) /= y) && (succ y == x)) pairs
+isFlush :: Hand -> Maybe HandType
+isFlush hand =
+  isFlush' (head (reverse (sortBy (comparing length) (groupBy ((==) `on` suit) hand))))
 
-isFlush :: HandGrouped -> Maybe HandGrouped
-isFlush (hand) =
-  case all (== x) xs of
-    True  -> Just hand
-    False -> Nothing
-  where (x:xs) = map suit (concat hand)
+isFlush' handG =
+  if (length handG) >= 5
+    then Just (Flush (last (sort (map rank handG))))
+    else Nothing
 
-isFullHouse :: HandGrouped -> Maybe HandGrouped
+isFullHouse :: Hand -> Maybe HandType
 isFullHouse hand =
-  case rest of
-    Nothing -> Nothing
-    Just rest -> isPair rest
-  where rest = isSet hand
+  case groupHand hand of
+    ([a, _, _]:[b, _]:xs) -> Just (FullHouse (rank a) (rank b))
+    otherwise             -> Nothing
 
-isQuads :: HandGrouped -> Maybe HandGrouped
-isQuads ([_,_,_,_]:xs) = (Just xs)
-isQuads _ = Nothing
+isQuads :: Hand -> Maybe HandType
+isQuads hand =
+  case groupHand hand of
+    ([a, _, _, _]:xs) -> Just (Quads (rank a))
+    otherwise         -> Nothing
 
-isStraightFlush :: HandGrouped -> Maybe HandGrouped
+isStraightFlush :: Hand -> Maybe HandType
 isStraightFlush hand =
-  case isStraight hand of
-    Just hand -> isFlush hand
-    Nothing   -> Nothing
-
-isRoyalFlush :: HandGrouped -> Maybe HandGrouped
-isRoyalFlush hand =
   case isFlush hand of
-    Just hand ->
-      if flatHand == [Ace, King, Queen, Jack, Ten]
-      then Just hand
-      else Nothing
     Nothing   -> Nothing
-  where flatHand = map rank (concat hand)
+    Just _    ->
+      case isStraight hand of
+        Just (Straight t) -> Just (StraightFlush t)
+        otherwise -> Nothing
 
-rank :: Card -> Rank
-rank card = (fst card)
+isRoyalFlush :: Hand -> Maybe HandType
+isRoyalFlush hand =
+  case isStraightFlush hand of
+    Just (StraightFlush Ten) -> Just RoyalFlush
+    otherwise                -> Nothing
 
-suit :: Card -> Suit
-suit card = (snd card)
+tryHand hand [] =
+  HighestCard (head (reverse (sort (map rank hand))))
 
-makeHighestCard   [[a], _, _, _, _]                 = HighestCard   (rank a)
-makePair          [[a, _], _ , _, _]                = Pair          (rank a)
-makeTwoPairs      [[a, _], [b, _], _]               = TwoPairs      (rank a) (rank b)
-makeSet           [[a, _, _], _, _]                 = Set           (rank a)
-makeStraight      [[(Ace, _)], _, _, _, [(Two, _)]] = Straight      Ace
-makeStraight      [_, _, _, _, [a]]                 = Straight      (rank a)
-makeFlush         [[a], _, _, _, _]                 = Flush         (rank a)
-makeFullHouse     [[a, _, _], [b, _]]               = FullHouse     (rank a) (rank b)
-makeQuads         [[a, _, _, _], [_]]               = Quads         (rank a)
-makeStraightFlush [[(Ace, _)], _, _, _, [(Two, _)]] = StraightFlush Ace
-makeStraightFlush [_, _, _, _, [a]]                 = StraightFlush (rank a)
+tryHand hand (f:fs) =
+  case f hand of
+    Just handType -> handType
+    Nothing       -> tryHand hand fs
 
 handType :: Hand -> HandType
-handType hand = handType' (groupHand hand)
-
-handType' hand
-  | (isJust (isRoyalFlush    hand)) = RoyalFlush
-  | (isJust (isStraightFlush hand)) = makeStraightFlush hand
-  | (isJust (isQuads         hand)) = makeQuads         hand
-  | (isJust (isFullHouse     hand)) = makeFullHouse     hand
-  | (isJust (isFlush         hand)) = makeFlush         hand
-  | (isJust (isStraight      hand)) = makeStraight      hand
-  | (isJust (isSet           hand)) = makeSet           hand
-  | (isJust (isTwoPairs      hand)) = makeTwoPairs      hand
-  | (isJust (isPair          hand)) = makePair          hand
-  | otherwise                       = makeHighestCard   hand
+handType hand =
+  tryHand hand [
+    isRoyalFlush,
+    isStraightFlush,
+    isQuads,
+    isFullHouse,
+    isFlush,
+    isStraight,
+    isSet,
+    isTwoPairs,
+    isPair
+  ]
