@@ -38,7 +38,31 @@ main = hspec $ do
     handType (mkHand "As Kc 2d Kd Kh") `shouldBe` Set King
     handType (mkHand "3s 3c Kh 3d Td") `shouldBe` Set Three
 
+  it "straight" $ do
+    handType (mkHand "3s 4s 5d 6h 7s") `shouldBe` Straight Three
+    handType (mkHand "As 2s 3d 4h 5s") `shouldBe` Straight Ace
+    handType (mkHand "3s 4d 5d 6d 2h") `shouldBe` Straight Two
+    handType (mkHand "Ts Jd Qd Kd Ah") `shouldBe` Straight Ten
+    handType (mkHand "Jd Qd Kd Ah 2d") `shouldBe` HighestCard Ace
+
+  it "flush" $ do
+    handType (mkHand "2s 5s 3s As 6s") `shouldBe` Flush Ace
+    handType (mkHand "Qd 2d Jd 7d Td") `shouldBe` Flush Queen
+
   it "full house" $ do
     handType (mkHand "6d 6c 6h 2d 2s") `shouldBe` FullHouse Six Two
     handType (mkHand "2d 6d 2c 6c 6h") `shouldBe` FullHouse Six Two
     handType (mkHand "Ad 6d Ac 6h As") `shouldBe` FullHouse Ace Six
+
+  it "quads" $ do
+    handType (mkHand "6d 6c 6h 6s 2s") `shouldBe` Quads Six
+    handType (mkHand "Ad 6c Ah As As") `shouldBe` Quads Ace
+
+  it "straight flush" $ do
+    handType (mkHand "3s 4s 5s 6s 7s") `shouldBe` StraightFlush Three
+    handType (mkHand "Ad 2d 3d 4d 5d") `shouldBe` StraightFlush Ace
+    handType (mkHand "3h 4h 5h 6h 2h") `shouldBe` StraightFlush Two
+
+  it "royal flush" $ do
+    handType (mkHand "Ts Js Qs Ks As")  `shouldBe` RoyalFlush
+    handType (mkHand "Ad Jd Kd Td Qd") `shouldBe` RoyalFlush
