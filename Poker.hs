@@ -109,12 +109,7 @@ isQuads hand =
 
 isStraightFlush :: Hand -> Maybe HandType
 isStraightFlush hand =
-  case isFlush hand of
-    Nothing   -> Nothing
-    Just _    ->
-      case isStraight hand of
-        Just (Straight t) -> Just (StraightFlush t)
-        otherwise -> Nothing
+  isFlush hand >> isStraight hand >>= \(Straight t) -> Just (StraightFlush t)
 
 isRoyalFlush :: Hand -> Maybe HandType
 isRoyalFlush hand =
