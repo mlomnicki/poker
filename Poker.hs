@@ -45,8 +45,6 @@ rank card = (fst card)
 suit :: Card -> Suit
 suit card = (snd card)
 
-type HandGrouped = [[Card]]
-
 groupHand hand = reverse $
                  sortBy (comparing length) $
                  groupBy ((==) `on` fst) $
