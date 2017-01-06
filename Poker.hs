@@ -85,13 +85,11 @@ isStraight (hand) =
     otherwise -> Nothing
 
 isFlush :: Hand -> Maybe HandType
-isFlush hand = isFlush' $
-               sortBy (comparing (negate . length)) $
-               groupBy ((==) `on` suit) hand
-
-isFlush' (sameSuitCards:_)
+isFlush hand
   | (length sameSuitCards) >= 5 = Just (Flush $ maximum $ map rank sameSuitCards)
   | otherwise = Nothing
+  where (sameSuitCards:_) = sortBy (comparing (negate . length)) $
+                            groupBy ((==) `on` suit) hand
 
 isFullHouse :: Hand -> Maybe HandType
 isFullHouse hand =
