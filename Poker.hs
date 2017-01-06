@@ -89,10 +89,9 @@ isFlush hand = isFlush' $
                sortBy (comparing (negate . length)) $
                groupBy ((==) `on` suit) hand
 
-isFlush' (sameSuitCards:_) =
-  if (length sameSuitCards) >= 5
-    then Just (Flush $ maximum $ map rank sameSuitCards)
-    else Nothing
+isFlush' (sameSuitCards:_)
+  | (length sameSuitCards) >= 5 = Just (Flush $ maximum $ map rank sameSuitCards)
+  | otherwise = Nothing
 
 isFullHouse :: Hand -> Maybe HandType
 isFullHouse hand =
@@ -111,10 +110,9 @@ isStraightFlush hand =
   isFlush hand >> isStraight hand >>= \(Straight t) -> Just (StraightFlush t)
 
 isRoyalFlush :: Hand -> Maybe HandType
-isRoyalFlush hand =
-  case isStraightFlush hand of
-    Just (StraightFlush Ten) -> Just RoyalFlush
-    otherwise                -> Nothing
+isRoyalFlush hand = (isStraightFlush hand) >>= isRoyalFlush'
+isRoyalFlush' (StraightFlush Ten) = Just RoyalFlush
+isRoyalFlush' _                   = Nothing
 
 tryHand hand [] =
   HighestCard (head (reverse (sort (map rank hand))))
