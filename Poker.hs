@@ -108,12 +108,11 @@ isStraightFlush hand =
   isFlush hand >> isStraight hand >>= \(Straight t) -> Just (StraightFlush t)
 
 isRoyalFlush :: Hand -> Maybe HandType
-isRoyalFlush hand = (isStraightFlush hand) >>= isRoyalFlush'
-isRoyalFlush' (StraightFlush Ten) = Just RoyalFlush
-isRoyalFlush' _                   = Nothing
+isRoyalFlush hand
+  | Just (StraightFlush Ten) == (isStraightFlush hand) = Just RoyalFlush
+  | otherwise = Nothing
 
-tryHand hand [] =
-  HighestCard (head (reverse (sort (map rank hand))))
+tryHand hand [] = HighestCard $ maximum $ map rank hand
 
 tryHand hand (f:fs) =
   case f hand of
