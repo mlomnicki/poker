@@ -1,7 +1,7 @@
 module Poker where
 
 import Data.List.Split
-import Data.List (sort, sortBy, groupBy)
+import Data.List (sort, sortBy, groupBy, maximum)
 import Data.Ord (comparing)
 import Data.Function (on)
 
@@ -85,12 +85,13 @@ isStraight (hand) =
     otherwise -> Nothing
 
 isFlush :: Hand -> Maybe HandType
-isFlush hand =
-  isFlush' (head (reverse (sortBy (comparing length) (groupBy ((==) `on` suit) hand))))
+isFlush hand = isFlush' $
+               sortBy (comparing (negate . length)) $
+               groupBy ((==) `on` suit) hand
 
-isFlush' handG =
-  if (length handG) >= 5
-    then Just (Flush (last (sort (map rank handG))))
+isFlush' (sameSuitCards:_) =
+  if (length sameSuitCards) >= 5
+    then Just (Flush $ maximum $ map rank sameSuitCards)
     else Nothing
 
 isFullHouse :: Hand -> Maybe HandType
