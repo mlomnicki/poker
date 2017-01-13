@@ -1,4 +1,4 @@
-module Poker where
+module HandType where
 
 import Data.List.Split
 import Data.List (sort, sortBy, groupBy, maximum)

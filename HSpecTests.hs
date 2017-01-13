@@ -1,6 +1,6 @@
 module Main where
 
-import Poker
+import HandType
 import Test.Hspec
 import Data.List.Split
 
