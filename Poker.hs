@@ -52,22 +52,19 @@ groupHand hand = reverse $
 
 
 isPair :: Hand -> Maybe HandType
-isPair hand =
-  case groupHand hand of
-    ([a, _]:xs) -> Just (Pair (rank a))
-    otherwise   -> Nothing
+isPair hand         = isPair' (groupHand hand)
+isPair' ([a, _]:xs) = Just (Pair (rank a))
+isPair' _           = Nothing
 
 isTwoPairs :: Hand -> Maybe HandType
-isTwoPairs hand =
-  case groupHand hand of
-    ([a, _]:[b, _]:xs) -> Just (TwoPairs (rank a) (rank b))
-    otherwise          -> Nothing
+isTwoPairs  hand               = isTwoPairs' (groupHand hand)
+isTwoPairs' ([a, _]:[b, _]:xs) = Just (TwoPairs (rank a) (rank b))
+isTwoPairs' _                  = Nothing
 
 isSet :: Hand -> Maybe HandType
-isSet hand =
-  case groupHand hand of
-    ([a, _, _]:xs) -> Just (Set (rank a))
-    otherwise      -> Nothing
+isSet  hand           = isSet' (groupHand hand)
+isSet' ([a, _, _]:xs) = Just (Set (rank a))
+isSet' _              = Nothing
 
 isStraight :: Hand -> Maybe HandType
 isStraight (hand) =
@@ -92,16 +89,14 @@ isFlush hand
                             groupBy ((==) `on` suit) hand
 
 isFullHouse :: Hand -> Maybe HandType
-isFullHouse hand =
-  case groupHand hand of
-    ([a, _, _]:[b, _]:xs) -> Just (FullHouse (rank a) (rank b))
-    otherwise             -> Nothing
+isFullHouse hand                   = isFullHouse' (groupHand hand)
+isFullHouse' ([a, _, _]:[b, _]:xs) = Just (FullHouse (rank a) (rank b))
+isFullHouse' _                     = Nothing
 
 isQuads :: Hand -> Maybe HandType
-isQuads hand =
-  case groupHand hand of
-    ([a, _, _, _]:xs) -> Just (Quads (rank a))
-    otherwise         -> Nothing
+isQuads hand               = isQuads' (groupHand hand)
+isQuads' ([a, _, _, _]:xs) = Just (Quads (rank a))
+isQuads' _                 = Nothing
 
 isStraightFlush :: Hand -> Maybe HandType
 isStraightFlush hand =
