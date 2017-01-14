@@ -66,8 +66,7 @@ isSet  hand           = isSet' (groupHand hand)
 isSet' ([a, _, _]:xs) = Just (Set (rank a))
 isSet' _              = Nothing
 
-isStraight :: Hand -> Maybe HandType
-isStraight (hand) =
+isStraight2 (hand) =
   case sort (map rank hand) of
     [Two, Three, Four, Five, Ace]   -> Just (Straight Ace)
     [Two, Three, Four, Five, Six]   -> Just (Straight Two)
@@ -80,6 +79,20 @@ isStraight (hand) =
     [Nine, Ten, Jack, Queen, King]  -> Just (Straight Nine)
     [Ten, Jack, Queen, King, Ace]   -> Just (Straight Ten)
     otherwise -> Nothing
+
+isStraight hand
+  | h == [Two   .. Six]                = Just (Straight Two)
+  | h == [Three .. Seven]              = Just (Straight Three)
+  | h == [Four  .. Eight]              = Just (Straight Four)
+  | h == [Five  .. Nine]               = Just (Straight Five)
+  | h == [Six   .. Ten]                = Just (Straight Six)
+  | h == [Seven .. Jack]               = Just (Straight Seven)
+  | h == [Eight .. Queen]              = Just (Straight Eight)
+  | h == [Nine  .. King]               = Just (Straight Nine)
+  | h == [Ten   .. Ace]                = Just (Straight Ten)
+  | h == [Two   .. Five] ++ [Ace]      = Just (Straight Ace)
+  | otherwise                          = Nothing
+  where h = sort (map rank hand)
 
 isFlush :: Hand -> Maybe HandType
 isFlush hand
