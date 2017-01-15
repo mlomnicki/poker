@@ -66,20 +66,6 @@ isSet  hand           = isSet' (groupHand hand)
 isSet' ([a, _, _]:xs) = Just (Set (rank a))
 isSet' _              = Nothing
 
-isStraight2 (hand) =
-  case sort (map rank hand) of
-    [Two, Three, Four, Five, Ace]   -> Just (Straight Ace)
-    [Two, Three, Four, Five, Six]   -> Just (Straight Two)
-    [Three, Four, Five, Six, Seven] -> Just (Straight Three)
-    [Four, Five, Six, Seven, Eight] -> Just (Straight Four)
-    [Five, Six, Seven, Eight, Nine] -> Just (Straight Five)
-    [Six, Seven, Eight, Nine, Ten]  -> Just (Straight Six)
-    [Seven, Eight, Nine, Ten, Jack] -> Just (Straight Seven)
-    [Eight, Nine, Ten, Jack, Queen] -> Just (Straight Eight)
-    [Nine, Ten, Jack, Queen, King]  -> Just (Straight Nine)
-    [Ten, Jack, Queen, King, Ace]   -> Just (Straight Ten)
-    otherwise -> Nothing
-
 isStraight hand
   | h == [Two   .. Six]                = Just (Straight Two)
   | h == [Three .. Seven]              = Just (Straight Three)
